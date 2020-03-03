@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
 import { startScanning } from '@abandonware/noble';
+import { PeripheralDTO } from './types/peripheral';
 
 describe('AppController', () => {
   let app: TestingModule;
@@ -44,7 +45,15 @@ describe('AppController', () => {
   });
 
   it('should set up the correct event handlers', () => {
-    expect(mockNoble.on).toHaveBeenCalledWith('discover', mockService.onDiscover);
+    expect(mockNoble.on).toHaveBeenCalledWith('discover', expect.any(Function));
+
+    const p: Partial<PeripheralDTO> = {
+      id: 'foobar'
+    };
+    const callback = mockNoble.on.mock.calls[1][1];
+
+    callback(p);
+    expect(mockService.onDiscover).toHaveBeenCalled();
   });
 
   describe('when the startScan endpoint is called', () => {
@@ -68,15 +77,15 @@ describe('AppController', () => {
   });
 
   describe('when the peripherals endpoint is called', () => {
-    let testData;
+    let testData: Partial<PeripheralDTO>[];
     let result: any;
     beforeEach(() => {
       testData = [
         {
-          foo: 'bar'
+          id: 'foobar'
         },
         {
-          foo: 'bar2'
+          id: 'foobar2'
         }
       ];
       mockService.peripherals = testData;
